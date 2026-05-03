@@ -103,7 +103,7 @@ public class AbstractBeanWriter implements BeanWriter {
         String pojoObjectName = DbUtil.javaObjectName(table.getName()) + "Pojo";
 
         // Gestione conflitti di naming
-        if (dataBase.getSchema().getTable(DbUtil.javaClassName(table.getName())) != null) {
+        if (table.getName().contains("_") && dataBase.getSchema().getTable(DbUtil.javaClassName(table.getName())) != null) {
             pojoClassName = GenUtil.initCap(table.getName()) + "Pojo";
             pojoObjectName = GenUtil.initLow(table.getName()) + "Pojo";
         }
@@ -138,8 +138,9 @@ public class AbstractBeanWriter implements BeanWriter {
         String pojoPackageName = genPackage + VIEW;
         String pojoClassName = DbUtil.javaClassName(view.getName()) + "Pojo";
         String pojoObjectName = DbUtil.javaObjectName(view.getName()) + "Pojo";
+
         // Gestione conflitti di naming
-        if (dataBase.getSchema().getTable(DbUtil.javaClassName(view.getName())) != null) {
+        if (view.getName().contains("_") && dataBase.getSchema().getTable(DbUtil.javaClassName(view.getName())) != null) {
             pojoClassName = GenUtil.initCap(view.getName()) + "Pojo";
             pojoObjectName = GenUtil.initLow(view.getName()) + "Pojo";
         }
