@@ -1,121 +1,12 @@
 package ${tableBeanPackageName};
 
-import it.eg.sloth.db.datasource.DataRow;
-import it.eg.sloth.db.datasource.RowStatus;
-import it.eg.sloth.db.datasource.row.DbRow;
-import it.eg.sloth.db.datasource.row.TransactionalRow;
-import it.eg.sloth.db.datasource.row.column.Column;
-import it.eg.sloth.db.datasource.row.lob.BLobData;
-import it.eg.sloth.db.datasource.row.lob.CLobData;
-import it.eg.sloth.db.manager.DataConnectionManager;
-import it.eg.sloth.db.query.SelectQueryInterface;
-import it.eg.sloth.db.query.query.Query;
-import it.eg.sloth.framework.common.exception.FrameworkException;
-import lombok.SneakyThrows;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.Writer;
-import java.math.BigDecimal;
-import java.sql.*;
-
-import org.apache.commons.io.IOUtils;
+import lombok.Data;
 
 /**
  * RowBean per la tabella ${tableName}
  */
 public class ${rowBeanClassName} extends DbRow {
 
-#foreach( $tableColumn in $table.tableColumnCollection )
-    public static final String $tableColumn.name.toUpperCase() = "$tableColumn.name.toLowerCase()";
-#end
-
-    public static final Column[] columns = {
-#foreach( $tableColumn in $table.tableColumnCollection )
-        ${DbUtil.genColumn($tableColumn)}#if( $foreach.hasNext ),#end
-#end
-    };
-
-    private static String SQL_SELECT =
-        ${DbUtil.genSelect($table)};
-
-    private static String SQL_INSERT =
-        ${DbUtil.genInsert($table)};
-
-    private static String SQL_DELETE =
-        ${DbUtil.genDelete($table)};
-
-    private static String SQL_UPDATE =
-        ${DbUtil.genUpdate($table)};
-		
-#foreach( $tableColumn in $table.lobColumnCollection )
-    private static String SQL_UPDATE_${tableColumn.name.toUpperCase()} =
-        ${DbUtil.genUdateLob($table, $tableColumn)};
-#end
-
-    public ${rowBeanClassName}() {
-        super();
-    }
-
-    @Override
-    public TransactionalRow setObject(String name, Object value) {
-#foreach( $tableColumn in $table.blobColumnCollection )
-        if (${tableColumn.name.toUpperCase()}.equalsIgnoreCase(name) && value instanceof byte[]) {
-            set${tableColumn.name}((byte[]) value);
-            return this;
-        }
-#end
-#foreach( $tableColumn in $table.clobColumnCollection )
-        if (${tableColumn.name.toUpperCase()}.equalsIgnoreCase(name) && value instanceof String) {
-            set${tableColumn.name}((String) value);
-            return this;
-        }
-#end
-        return super.setObject(name, value);
-       }
-
-#if ( $table.getPrimaryKeyCollection().size() > 0)
-    public ${rowBeanClassName}(${DbUtil.genPrimaryKeyList($table, true)}) throws SQLException, IOException, FrameworkException {
-        this(null, ${DbUtil.genPrimaryKeyList($table, false)});
-    }
-
-    public ${rowBeanClassName}(Connection connection, ${DbUtil.genPrimaryKeyList($table, true)}) throws SQLException, IOException, FrameworkException {
-        this();
-#foreach( $tableColumn in $table.primaryKeyCollection )
-        set${tableColumn.name}(${GenUtil.initLow($tableColumn.name)});
-#end
-        select(connection);
-    }
-#end
-
-    @Override
-    public Column[] getColumns() {
-        return columns;
-    }
-
-    @Override
-    public String getSelect() {
-        return SQL_SELECT;
-    }
-
-    @Override
-    public String getInsert() {
-        return SQL_INSERT;
-    }
-
-    @Override
-    public String getDelete() {
-        return SQL_DELETE;
-    }
-
-    @Override
-    public String getUpdate() {
-        return SQL_UPDATE;
-    }
 
     // Setter/Getter
 #foreach( $tableColumn in $table.plainColumnCollection )

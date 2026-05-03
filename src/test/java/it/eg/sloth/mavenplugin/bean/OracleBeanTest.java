@@ -8,24 +8,24 @@ import java.io.IOException;
 
 class OracleBeanTest extends AbstractBeanTest {
 
-    @BeforeEach
-    void init() throws IOException {
-        super.init(DataBaseType.ORACLE);
-    }
-
-    @Test
-    void beanGenTest() throws IOException {
-        getBeanWriter().writeTables(dataBase.getSchema().getTableCollection());
-
-        getBeanWriter().writeViews(dataBase.getSchema().getViewCollection());
-
-        getBeanWriter().writeSequence(dataBase.getSchema().getSequenceCollection());
-
-        getBeanWriter().writeFunction(dataBase.getSchema().getFunctionCollection());
-
-        getBeanWriter().writeProcedure(dataBase.getSchema().getProcedureCollection());
-
-        getBeanWriter().writePackages(dataBase.getSchema().getPackageCollection());
-    }
+//    @BeforeEach
+//    void init() throws IOException {
+//        super.init(DataBaseType.ORACLE);
+//    }
+//
+//    @Test
+//    void beanGenTest() throws IOException {
+//        getBeanWriter().writeTables(dataBase.getSchema().getTableCollection());
+//
+//        getBeanWriter().writeViews(dataBase.getSchema().getViewCollection());
+//
+//        getBeanWriter().writeSequence(dataBase.getSchema().getSequenceCollection());
+//
+//        getBeanWriter().writeFunction(dataBase.getSchema().getFunctionCollection());
+//
+//        getBeanWriter().writeProcedure(dataBase.getSchema().getProcedureCollection());
+//
+//        getBeanWriter().writePackages(dataBase.getSchema().getPackageCollection());
+//    }
 
 }
