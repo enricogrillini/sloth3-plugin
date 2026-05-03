@@ -1,7 +1,8 @@
-package it.eg.sloth.mavenplugin.common;
+package it.eg.sloth.mavenplugin.writer.bean2.common;
 
 import it.eg.sloth.mavenplugin.writer.bean2.common.StringUtil;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.text.CaseUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,7 +47,6 @@ public class GenUtil {
             return fileName.substring(0, fileName.lastIndexOf('.'));
         }
     }
-
 
     /**
      * Ritona il File della classe passata

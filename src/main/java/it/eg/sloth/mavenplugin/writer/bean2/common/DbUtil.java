@@ -6,7 +6,7 @@ import it.eg.sloth.dbmodeler.model.schema.code.Method;
 import it.eg.sloth.dbmodeler.model.schema.table.Table;
 import it.eg.sloth.dbmodeler.model.schema.table.TableColumn;
 import it.eg.sloth.dbmodeler.model.schema.view.ViewColumn;
-import it.eg.sloth.mavenplugin.common.GenUtil;
+import org.apache.commons.text.CaseUtils;
 
 import java.text.MessageFormat;
 
@@ -37,6 +37,14 @@ public class DbUtil {
     private static final String STATEMENT_PROCEDURE = "'{' call {0}({1}) '}'";
 
     private static final String ORACLE_BOOLEAN = "PL/SQL BOOLEAN";
+
+    public static String javaClassName(String dbName) {
+        return CaseUtils.toCamelCase(dbName, true, '-');
+    }
+
+    public static String javaObjectName(String dbName) {
+        return CaseUtils.toCamelCase(dbName, false, '-');
+    }
 
     public static boolean isOracleBoolean(String dataType) {
         if (dataType == null)
@@ -129,29 +137,7 @@ public class DbUtil {
         return getTypes(function.getReturnType());
     }
 
-    public static String genColumn(TableColumn tableColumn) {
-        return MessageFormat.format(
-                COLUMN,
-                tableColumn.getName().toUpperCase(),
-                StringUtil.toJavaStringParameter(tableColumn.getDescription()),
-                tableColumn.isPrimaryKey(),
-                tableColumn.isNullable(),
-                tableColumn.getDataPrecision(),
-                getTypes(tableColumn.getType())
-        );
-    }
 
-    public static String genColumn(ViewColumn tableColumn) {
-        return MessageFormat.format(
-                COLUMN,
-                tableColumn.getName().toUpperCase(),
-                StringUtil.toJavaStringParameter(tableColumn.getDescription()),
-                false,
-                true,
-                tableColumn.getDataPrecision(),
-                getTypes(tableColumn.getType())
-        );
-    }
 
     public static String genPrimaryKeyList(Table table, boolean type) {
         StringBuilder result = new StringBuilder();
