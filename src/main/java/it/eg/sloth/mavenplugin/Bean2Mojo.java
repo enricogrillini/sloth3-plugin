@@ -67,31 +67,31 @@ public class Bean2Mojo extends SlothMojo {
                 dataBase.readJson(dbSchema);
 
                 log.info("  Schema type:" + dataBase.getDbConnection().getDataBaseType());
-                BeanWriter beanWriter = BeanWriter.Factory.getBeanWriter(outputJavaDirectory, genPackage, dataBase.getDbConnection().getDataBaseType());
+                BeanWriter beanWriter = BeanWriter.Factory.getBeanWriter(outputJavaDirectory, genPackage, dataBase);
 
-                // Table bean
-                log.info("  Table bean");
-                beanWriter.writeTables(dataBase.getSchema().getTableCollection());
+                // Table Pojo
+                log.info("  Table pojo");
+                beanWriter.writeTables();
 
-                // View bean
-                log.info("  View bean");
-                beanWriter.writeViews(dataBase.getSchema().getViewCollection());
-
-                // Sequence Dao
-                log.info("  Sequence Dao");
-                beanWriter.writeSequence(dataBase.getSchema().getSequenceCollection());
-
-                // Function Dao
-                log.info("  Function Dao");
-                beanWriter.writeFunction(dataBase.getSchema().getFunctionCollection());
-
-                // Procedure Dao
-                log.info("  Procedure Dao");
-                beanWriter.writeProcedure(dataBase.getSchema().getProcedureCollection());
-
-                // Package Dao
-                log.info("  Package Dao");
-                beanWriter.writePackages(dataBase.getSchema().getPackageCollection());
+                // View Pojo
+                log.info("  View pojo");
+                beanWriter.writeViews();
+//
+//                // Sequence Dao
+//                log.info("  Sequence Dao");
+//                beanWriter.writeSequence(dataBase.getSchema().getSequenceCollection());
+//
+//                // Function Dao
+//                log.info("  Function Dao");
+//                beanWriter.writeFunction(dataBase.getSchema().getFunctionCollection());
+//
+//                // Procedure Dao
+//                log.info("  Procedure Dao");
+//                beanWriter.writeProcedure(dataBase.getSchema().getProcedureCollection());
+//
+//                // Package Dao
+//                log.info("  Package Dao");
+//                beanWriter.writePackages(dataBase.getSchema().getPackageCollection());
 
             } catch (Exception e) {
                 throw new MojoExecutionException("Could not generate Java source code!", e);

@@ -21,7 +21,7 @@
         <maven.compiler.target>17</maven.compiler.target>
 
         <maven.version>3.8.8</maven.version>
-        <lombok.version>1.18.46</lombok.version>
+        <lombok.version>1.18.42</lombok.version>
     </properties>
 
     <distributionManagement>
@@ -91,7 +91,6 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>

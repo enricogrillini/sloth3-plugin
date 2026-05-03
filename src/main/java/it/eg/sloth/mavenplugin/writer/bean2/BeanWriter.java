@@ -1,6 +1,8 @@
 package it.eg.sloth.mavenplugin.writer.bean2;
 
+import it.eg.sloth.dbmodeler.model.DataBase;
 import it.eg.sloth.dbmodeler.model.database.DataBaseType;
+import it.eg.sloth.dbmodeler.model.schema.Schema;
 import it.eg.sloth.dbmodeler.model.schema.code.Function;
 import it.eg.sloth.dbmodeler.model.schema.code.Package;
 import it.eg.sloth.dbmodeler.model.schema.code.Procedure;
@@ -31,9 +33,9 @@ import java.util.Collection;
  */
 public interface BeanWriter {
 
-    void writeTables(Collection<Table> tableCollection) throws IOException;
+    void writeTables() throws IOException;
 
-    void writeViews(Collection<View> viewCollection) throws IOException;
+    void writeViews() throws IOException;
 
     void writeSequence(Collection<Sequence> sequenceCollection) throws IOException;
 
@@ -48,15 +50,15 @@ public interface BeanWriter {
             // NOP
         }
 
-        public static BeanWriter getBeanWriter(File outputJavaDirectory, String genPackage, DataBaseType dataBaseType) {
+        public static BeanWriter getBeanWriter(File outputJavaDirectory, String genPackage, DataBase dataBase) {
             // Imposto il reader corretto
-            switch (dataBaseType) {
+            switch (dataBase.getDbConnection().getDataBaseType()) {
                 case H2:
-                    return new H2BeanWriter(outputJavaDirectory, genPackage, dataBaseType);
+                    return new H2BeanWriter(outputJavaDirectory, genPackage, dataBase);
                 case ORACLE:
-                    return new OracleBeanWriter(outputJavaDirectory, genPackage, dataBaseType);
+                    return new OracleBeanWriter(outputJavaDirectory, genPackage, dataBase);
                 case POSTGRES:
-                    return new PostgresBeanWriter(outputJavaDirectory, genPackage, dataBaseType);
+                    return new PostgresBeanWriter(outputJavaDirectory, genPackage, dataBase);
                 default:
                     // NOP
             }

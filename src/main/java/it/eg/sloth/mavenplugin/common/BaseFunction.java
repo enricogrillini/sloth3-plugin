@@ -1,4 +1,4 @@
-package it.eg.sloth.mavenplugin.writer.bean2.common;
+package it.eg.sloth.mavenplugin.common;
 
 import org.apache.commons.lang3.StringUtils;
 

@@ -1,4 +1,4 @@
-package it.eg.sloth.mavenplugin.writer.bean2.common;
+package it.eg.sloth.mavenplugin.common;
 
 import it.eg.sloth.dbmodeler.model.schema.code.Argument;
 import it.eg.sloth.dbmodeler.model.schema.code.Function;
@@ -39,11 +39,11 @@ public class DbUtil {
     private static final String ORACLE_BOOLEAN = "PL/SQL BOOLEAN";
 
     public static String javaClassName(String dbName) {
-        return CaseUtils.toCamelCase(dbName, true, '-');
+        return CaseUtils.toCamelCase(dbName, true, '_');
     }
 
     public static String javaObjectName(String dbName) {
-        return CaseUtils.toCamelCase(dbName, false, '-');
+        return CaseUtils.toCamelCase(dbName, false, '_');
     }
 
     public static boolean isOracleBoolean(String dataType) {
@@ -56,12 +56,14 @@ public class DbUtil {
     private static String getJavaClass(String type) {
         String dataType = type.toUpperCase();
 
-        if (dataType.startsWith("NUMBER") || dataType.startsWith("DOUBLE") || dataType.startsWith("FLOAT") || dataType.startsWith("BIT") || dataType.startsWith("BIGINT") || dataType.startsWith("INT") || dataType.startsWith("TINYINT") || dataType.startsWith("UNIQUEIDENTIFIER") || dataType.startsWith("DECIMAL")) {
-            return "BigDecimal";
+        if (dataType.equalsIgnoreCase("NUMBER(38,0)") || dataType.startsWith("BIT") || dataType.startsWith("BIGINT") || dataType.startsWith("INT") || dataType.startsWith("TINYINT") || dataType.startsWith("UNIQUEIDENTIFIER")) {
+            return "Long";
+        } else if (dataType.startsWith("NUMBER") || dataType.startsWith("DOUBLE") || dataType.startsWith("FLOAT") || dataType.startsWith("DECIMAL")) {
+            return "Double";
         } else if (dataType.startsWith("DATE")) {
-            return "Timestamp";
+            return "LocalDate";
         } else if (dataType.startsWith("TIMESTAMP")) {
-            return "Timestamp";
+            return "LocalDateTime";
         } else if (dataType.startsWith("VARCHAR") || dataType.startsWith("CHAR") || dataType.startsWith("LONG") || dataType.startsWith("TEXT")) {
             return "String";
         } else if (dataType.startsWith("BLOB") || dataType.startsWith("BYTEA")) {
@@ -136,7 +138,6 @@ public class DbUtil {
     public static String getTypes(Function function) {
         return getTypes(function.getReturnType());
     }
-
 
 
     public static String genPrimaryKeyList(Table table, boolean type) {

@@ -1,8 +1,6 @@
-package it.eg.sloth.mavenplugin.writer.bean2.common;
+package it.eg.sloth.mavenplugin.common;
 
-import it.eg.sloth.mavenplugin.writer.bean2.common.StringUtil;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.text.CaseUtils;
 
 import java.io.File;
 import java.io.IOException;

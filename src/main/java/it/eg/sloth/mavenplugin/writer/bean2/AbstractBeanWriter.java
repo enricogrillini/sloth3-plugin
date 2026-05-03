@@ -1,14 +1,14 @@
 package it.eg.sloth.mavenplugin.writer.bean2;
 
-import it.eg.sloth.dbmodeler.model.database.DataBaseType;
+import it.eg.sloth.dbmodeler.model.DataBase;
 import it.eg.sloth.dbmodeler.model.schema.code.Function;
 import it.eg.sloth.dbmodeler.model.schema.code.Package;
 import it.eg.sloth.dbmodeler.model.schema.code.Procedure;
 import it.eg.sloth.dbmodeler.model.schema.sequence.Sequence;
 import it.eg.sloth.dbmodeler.model.schema.table.Table;
 import it.eg.sloth.dbmodeler.model.schema.view.View;
-import it.eg.sloth.mavenplugin.writer.bean2.common.GenUtil;
-import it.eg.sloth.mavenplugin.writer.bean2.common.DbUtil;
+import it.eg.sloth.mavenplugin.common.DbUtil;
+import it.eg.sloth.mavenplugin.common.GenUtil;
 import lombok.Getter;
 import org.apache.commons.io.FileUtils;
 import org.apache.velocity.Template;
@@ -48,9 +48,8 @@ public class AbstractBeanWriter implements BeanWriter {
     private static final String PROCEDURE_DAO_TEMPLATE = "/templates/procedureDaoTemplate.java";
     private static final String PACKAGE_DAO_TEMPLATE = "/templates/packageDaoTemplate.java";
 
-    private static final String DECODE_MAP = ".bean.decodemap";
-    private static final String TABLE_BEAN = ".bean.tablebean";
-    private static final String VIEW_BEAN = ".bean.viewbean";
+    private static final String TABLE = ".model.table";
+    private static final String VIEW = ".model.view";
     private static final String DAO = ".dao";
 
     File outputJavaDirectory;
@@ -67,12 +66,13 @@ public class AbstractBeanWriter implements BeanWriter {
     Template packageDaoTemplate;
 
     @Getter
-    DataBaseType dataBaseType;
+    DataBase dataBase;
 
-    public AbstractBeanWriter(File outputJavaDirectory, String genPackage, DataBaseType dataBaseType) {
+
+    public AbstractBeanWriter(File outputJavaDirectory, String genPackage, DataBase dataBase) {
         this.outputJavaDirectory = outputJavaDirectory;
         this.genPackage = genPackage;
-        this.dataBaseType = dataBaseType;
+        this.dataBase = dataBase;
 
         velocityEngine = new VelocityEngine();
         velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADERS, "classpath");
@@ -84,43 +84,34 @@ public class AbstractBeanWriter implements BeanWriter {
 
         tableBeanTemplate = velocityEngine.getTemplate(TABLE_BEAN_TEMPLATE);
         decodeMapTemplate = velocityEngine.getTemplate(DECODE_MAP_TEMPLATE);
-        sequenceDaoTemplate = velocityEngine.getTemplate(MessageFormat.format(SEQUENCE_DAO_TEMPLATE, dataBaseType));
+        sequenceDaoTemplate = velocityEngine.getTemplate(MessageFormat.format(SEQUENCE_DAO_TEMPLATE, dataBase.getDbConnection().getDataBaseType()));
         functionDaoTemplate = velocityEngine.getTemplate(FUNCTION_DAO_TEMPLATE);
         procedureDaoTemplate = velocityEngine.getTemplate(PROCEDURE_DAO_TEMPLATE);
         packageDaoTemplate = velocityEngine.getTemplate(PACKAGE_DAO_TEMPLATE);
     }
 
-    public void writeTables(Collection<Table> tableCollection) throws IOException {
-        for (Table table : tableCollection) {
+    public void writeTables() throws IOException {
+        for (Table table : getDataBase().getSchema().getTableCollection()) {
             writeTable(table);
         }
     }
 
     public void writeTable(Table table) throws IOException {
-        // TableBean properties
-        String tableBeanClassName = GenUtil.initCap(table.getName()) + "TableBean";
-        String tableBeanPackageName = genPackage + TABLE_BEAN;
-        File tableBeanClassFile = GenUtil.getClassFile(outputJavaDirectory, tableBeanPackageName, tableBeanClassName);
-
+        // Pojo properties
+        String pojoPackageName = genPackage + TABLE;
         String pojoClassName = DbUtil.javaClassName(table.getName()) + "Pojo";
         String pojoObjectName = DbUtil.javaObjectName(table.getName()) + "Pojo";
 
-        String rowBeanPackageName = genPackage + TABLE_BEAN;
-        File rowBeanClassFile = GenUtil.getClassFile(outputJavaDirectory, rowBeanPackageName, pojoClassName);
-
-        String decodeMapClassName = GenUtil.initCap(table.getName()) + "DecodeMap";
-        String decodeMapPackageName = genPackage + DECODE_MAP;
-        File decodeMapClassFile = GenUtil.getClassFile(outputJavaDirectory, decodeMapPackageName, decodeMapClassName);
+        // Gestione conflitti di naming
+        if (dataBase.getSchema().getTable(DbUtil.javaClassName(table.getName())) != null) {
+            pojoClassName = GenUtil.initCap(table.getName()) + "Pojo";
+            pojoObjectName = GenUtil.initLow(table.getName()) + "Pojo";
+        }
 
         VelocityContext velocityContext = new VelocityContext();
-        velocityContext.put("tableBeanClassName", tableBeanClassName);
-        velocityContext.put("tableBeanPackageName", tableBeanPackageName);
-
+        velocityContext.put("pojoPackageName", pojoPackageName);
         velocityContext.put("pojoClassName", pojoClassName);
         velocityContext.put("pojoObjectName", pojoObjectName);
-
-        velocityContext.put("decodeMapClassName", decodeMapClassName);
-        velocityContext.put("decodeMapPackageName", decodeMapPackageName);
 
         velocityContext.put("tableName", table.getName().toUpperCase());
         velocityContext.put("table", table);
@@ -128,56 +119,35 @@ public class AbstractBeanWriter implements BeanWriter {
         velocityContext.put("DbUtil", DbUtil.class);
         velocityContext.put("GenUtil", GenUtil.class);
 
-        // Write class - Table Bean
-        FileUtils.forceMkdir(tableBeanClassFile.getParentFile());
-        try (FileWriter fileWriter = new FileWriter(tableBeanClassFile)) {
-            tableBeanTemplate.merge(velocityContext, fileWriter);
-        }
-
-        // Write class - Row Bean
+        // Write class - Pojo
+        File rowBeanClassFile = GenUtil.getClassFile(outputJavaDirectory, pojoPackageName, pojoClassName);
         FileUtils.forceMkdir(rowBeanClassFile.getParentFile());
         try (FileWriter fileWriter = new FileWriter(rowBeanClassFile)) {
             pojoTemplateForTable.merge(velocityContext, fileWriter);
         }
-
-        // Write class - Decode Map
-        FileUtils.forceMkdir(decodeMapClassFile.getParentFile());
-        if (table.getName().toUpperCase().contains("DEC_")) {
-            try (FileWriter fileWriter = new FileWriter(decodeMapClassFile)) {
-                decodeMapTemplate.merge(velocityContext, fileWriter);
-            }
-        }
     }
 
-    public void writeViews(Collection<View> viewCollection) throws IOException {
-        for (View view : viewCollection) {
+    public void writeViews() throws IOException {
+        for (View view : getDataBase().getSchema().getViewCollection()) {
             writeView(view);
         }
     }
 
     public void writeView(View view) throws IOException {
-        // TableBean properties
-        String tableBeanClassName = GenUtil.initCap(view.getName()) + "TableBean";
-        String tableBeanPackageName = genPackage + VIEW_BEAN;
-        File tableBeanClassFile = GenUtil.getClassFile(outputJavaDirectory, tableBeanPackageName, tableBeanClassName);
-
-        String rowBeanClassName = GenUtil.initCap(view.getName()) + "RowBean";
-        String rowBeanPackageName = genPackage + VIEW_BEAN;
-        File rowBeanClassFile = GenUtil.getClassFile(outputJavaDirectory, rowBeanPackageName, rowBeanClassName);
-
-        String decodeMapClassName = GenUtil.initCap(view.getName()) + "DecodeMap";
-        String decodeMapPackageName = genPackage + DECODE_MAP;
-        File decodeMapClassFile = GenUtil.getClassFile(outputJavaDirectory, decodeMapPackageName, decodeMapClassName);
+        // Pojo properties
+        String pojoPackageName = genPackage + VIEW;
+        String pojoClassName = DbUtil.javaClassName(view.getName()) + "Pojo";
+        String pojoObjectName = DbUtil.javaObjectName(view.getName()) + "Pojo";
+        // Gestione conflitti di naming
+        if (dataBase.getSchema().getTable(DbUtil.javaClassName(view.getName())) != null) {
+            pojoClassName = GenUtil.initCap(view.getName()) + "Pojo";
+            pojoObjectName = GenUtil.initLow(view.getName()) + "Pojo";
+        }
 
         VelocityContext velocityContext = new VelocityContext();
-        velocityContext.put("tableBeanClassName", tableBeanClassName);
-        velocityContext.put("tableBeanPackageName", tableBeanPackageName);
-
-        velocityContext.put("rowBeanClassName", rowBeanClassName);
-        velocityContext.put("rowBeanObjectName", GenUtil.initLow(rowBeanClassName));
-
-        velocityContext.put("decodeMapClassName", decodeMapClassName);
-        velocityContext.put("decodeMapPackageName", decodeMapPackageName);
+        velocityContext.put("pojoPackageName", pojoPackageName);
+        velocityContext.put("pojoClassName", pojoClassName);
+        velocityContext.put("pojoObjectName", pojoObjectName);
 
         velocityContext.put("tableName", view.getName().toUpperCase());
         velocityContext.put("table", view);
@@ -185,24 +155,11 @@ public class AbstractBeanWriter implements BeanWriter {
         velocityContext.put("DbUtil", DbUtil.class);
         velocityContext.put("GenUtil", GenUtil.class);
 
-        // Write class - Table Bean
-        FileUtils.forceMkdir(tableBeanClassFile.getParentFile());
-        try (FileWriter fileWriter = new FileWriter(tableBeanClassFile)) {
-            tableBeanTemplate.merge(velocityContext, fileWriter);
-        }
-
-        // Write class - Row Bean
-        FileUtils.forceMkdir(rowBeanClassFile.getParentFile());
-        try (FileWriter fileWriter = new FileWriter(rowBeanClassFile)) {
+        // Write class - Pojo
+        File pojoClassFile = GenUtil.getClassFile(outputJavaDirectory, pojoPackageName, pojoClassName);
+        FileUtils.forceMkdir(pojoClassFile.getParentFile());
+        try (FileWriter fileWriter = new FileWriter(pojoClassFile)) {
             pojoTemplateForView.merge(velocityContext, fileWriter);
-        }
-
-        // Write class - Decode Map
-        FileUtils.forceMkdir(decodeMapClassFile.getParentFile());
-        if (view.getName().toUpperCase().contains("DEC_")) {
-            try (FileWriter fileWriter = new FileWriter(decodeMapClassFile)) {
-                decodeMapTemplate.merge(velocityContext, fileWriter);
-            }
         }
     }
 

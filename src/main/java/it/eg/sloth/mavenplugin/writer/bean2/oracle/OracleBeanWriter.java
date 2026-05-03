@@ -1,5 +1,6 @@
 package it.eg.sloth.mavenplugin.writer.bean2.oracle;
 
+import it.eg.sloth.dbmodeler.model.DataBase;
 import it.eg.sloth.dbmodeler.model.database.DataBaseType;
 import it.eg.sloth.mavenplugin.writer.bean2.AbstractBeanWriter;
 import it.eg.sloth.mavenplugin.writer.bean2.BeanWriter;
@@ -22,8 +23,8 @@ import java.io.File;
  */
 public class OracleBeanWriter extends AbstractBeanWriter implements BeanWriter {
 
-    public OracleBeanWriter(File outputJavaDirectory, String genPackage, DataBaseType dataBaseType) {
-        super(outputJavaDirectory, genPackage, dataBaseType);
+    public OracleBeanWriter(File outputJavaDirectory, String genPackage, DataBase dataBase) {
+        super(outputJavaDirectory, genPackage, dataBase);
     }
 
 }
