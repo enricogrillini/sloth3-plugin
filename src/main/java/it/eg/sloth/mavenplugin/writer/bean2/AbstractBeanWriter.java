@@ -78,7 +78,6 @@ public class AbstractBeanWriter implements BeanWriter {
         pojoTemplateForView = velocityEngine.getTemplate(MessageFormat.format(POJO, "VIEW"));
 
         daoTemplateForTable = velocityEngine.getTemplate(MessageFormat.format(DAO, "TABLE"));
-        daoTemplateForView = velocityEngine.getTemplate(MessageFormat.format(DAO, "VIEW"));
     }
 
     public void writeTables() throws IOException {
@@ -104,8 +103,8 @@ public class AbstractBeanWriter implements BeanWriter {
         velocityContext.put("pojoObjectName", objectName + "Pojo");
 
         velocityContext.put("daoPackageName", genPackage + PACKAGE_TABLE_DAO);
-        velocityContext.put("daoClassName", className + "Dao");
-        velocityContext.put("daoObjectName", objectName + "Dao");
+        velocityContext.put("daoClassName", className + "BaseDao");
+        velocityContext.put("daoObjectName", objectName + "BaseDao");
 
         velocityContext.put("tableName", table.getName().toUpperCase());
         velocityContext.put("table", table);
@@ -121,7 +120,7 @@ public class AbstractBeanWriter implements BeanWriter {
         }
 
         // Write class - DAO
-        File daoClassFile = GenUtil.getClassFile(outputJavaDirectory, genPackage + PACKAGE_TABLE_DAO, className + "Dao");
+        File daoClassFile = GenUtil.getClassFile(outputJavaDirectory, genPackage + PACKAGE_TABLE_DAO, className + "BaseDao");
         FileUtils.forceMkdir(daoClassFile.getParentFile());
         try (FileWriter fileWriter = new FileWriter(daoClassFile)) {
             daoTemplateForTable.merge(velocityContext, fileWriter);
@@ -134,42 +133,25 @@ public class AbstractBeanWriter implements BeanWriter {
         }
     }
 
-    @Override
-    public void writeSequence(Collection<Sequence> sequenceCollection) throws IOException {
-        // NOP
-    }
-
-    @Override
-    public void writeFunction(Collection<Function> functionCollection) throws IOException {
-        // NOP
-    }
-
-    @Override
-    public void writeProcedure(Collection<Procedure> procedureCollection) throws IOException {
-        // NOP
-    }
-
-    @Override
-    public void writePackages(Collection<Package> packageCollection) throws IOException {
-        // NOP
-    }
-
     public void writeView(View view) throws IOException {
-        // Pojo properties
-        String pojoPackageName = genPackage + PACKAGE_VIEW_POJO;
-        String pojoClassName = DbUtil.javaClassName(view.getName()) + "Pojo";
-        String pojoObjectName = DbUtil.javaObjectName(view.getName()) + "Pojo";
+        String className = DbUtil.javaClassName(view.getName());
+        String objectName = DbUtil.javaObjectName(view.getName());
 
         // Gestione conflitti di naming
         if (view.getName().contains("_") && dataBase.getSchema().getTable(DbUtil.javaClassName(view.getName())) != null) {
-            pojoClassName = GenUtil.initCap(view.getName()) + "Pojo";
-            pojoObjectName = GenUtil.initLow(view.getName()) + "Pojo";
+            className = GenUtil.initCap(view.getName());
+            objectName = GenUtil.initLow(view.getName());
         }
 
+        // VelocityContext
         VelocityContext velocityContext = new VelocityContext();
-        velocityContext.put("pojoPackageName", pojoPackageName);
-        velocityContext.put("pojoClassName", pojoClassName);
-        velocityContext.put("pojoObjectName", pojoObjectName);
+        velocityContext.put("pojoPackageName", genPackage + PACKAGE_VIEW_POJO);
+        velocityContext.put("pojoClassName", className + "Pojo");
+        velocityContext.put("pojoObjectName", objectName + "Pojo");
+
+        velocityContext.put("daoPackageName", genPackage + PACKAGE_VIEW_DAO);
+        velocityContext.put("daoClassName", className + "BaseDao");
+        velocityContext.put("daoObjectName", objectName + "BaseDao");
 
         velocityContext.put("tableName", view.getName().toUpperCase());
         velocityContext.put("table", view);
@@ -178,11 +160,12 @@ public class AbstractBeanWriter implements BeanWriter {
         velocityContext.put("GenUtil", GenUtil.class);
 
         // Write class - Pojo
-        File pojoClassFile = GenUtil.getClassFile(outputJavaDirectory, pojoPackageName, pojoClassName);
+        File pojoClassFile = GenUtil.getClassFile(outputJavaDirectory, genPackage + PACKAGE_VIEW_POJO, className + "Pojo");
         FileUtils.forceMkdir(pojoClassFile.getParentFile());
         try (FileWriter fileWriter = new FileWriter(pojoClassFile)) {
             pojoTemplateForView.merge(velocityContext, fileWriter);
         }
+
     }
 
 

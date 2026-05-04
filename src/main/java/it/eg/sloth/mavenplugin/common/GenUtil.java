@@ -79,12 +79,12 @@ public class GenUtil {
         return stringToJava(value, false);
     }
 
-    public static String stringToJava(String value, boolean indented) {
+    public static String stringToJava(String value, boolean mutiline) {
         if (value == null) {
             return "null";
         } else {
-            if (indented) {
-                return "\"" + StringUtil.replace(value, "\"", "\\\"").replace("\n", "\\n\" +\n        \"").replace("\r", "") + "\"";
+            if (mutiline) {
+                return "\"\"\"\n            " + value.replace("\n", "\n            ").replace("\r", "") + "\n            \"\"\"";
             } else {
                 return "\"" + StringUtil.replace(value, "\"", "\\\"").replace("\n", "\\n\" +\n\"").replace("\r", "") + "\"";
             }

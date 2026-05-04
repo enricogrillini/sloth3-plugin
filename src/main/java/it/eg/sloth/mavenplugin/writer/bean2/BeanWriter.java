@@ -37,14 +37,6 @@ public interface BeanWriter {
 
     void writeViews() throws IOException;
 
-    void writeSequence(Collection<Sequence> sequenceCollection) throws IOException;
-
-    void writeFunction(Collection<Function> functionCollection) throws IOException;
-
-    void writeProcedure(Collection<Procedure> procedureCollection) throws IOException;
-
-    void writePackages(Collection<Package> packageCollection) throws IOException;
-
     class Factory {
         private Factory() {
             // NOP

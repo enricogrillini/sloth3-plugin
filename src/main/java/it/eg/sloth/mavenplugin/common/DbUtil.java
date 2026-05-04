@@ -30,7 +30,6 @@ public class DbUtil {
         // NOP
     }
 
-    public static final String COLUMN = "new Column ({0}, {1}, {2}, {3}, {4}, {5})";
 
     private static final String STATEMENT_FUNCTION_BOOL = "'{' ? = call lib.booleanToChar({0}({1})) '}'";
     private static final String STATEMENT_FUNCTION = "'{' ? = call {0}({1}) '}'";
@@ -93,53 +92,6 @@ public class DbUtil {
         return getJavaClass(function.getReturnType());
     }
 
-    private static String getTypes(String type) {
-        String dataType = type.toUpperCase();
-
-        if (dataType.equals("NUMBER(38,0)") || dataType.startsWith("INT")) {
-            return "Types.INTEGER";
-        } else if (dataType.startsWith("BIGINT")) {
-            return "Types.BIGINT";
-        } else if (dataType.startsWith("NUMBER") || dataType.startsWith("DOUBLE") || dataType.startsWith("FLOAT") || dataType.startsWith("BIT") || dataType.startsWith("TINYINT") || dataType.startsWith("UNIQUEIDENTIFIER") || dataType.startsWith("DECIMAL")) {
-            return "Types.DECIMAL";
-        } else if (dataType.startsWith("DATE")) {
-            return "Types.DATE";
-        } else if (dataType.startsWith("TIMESTAMP")) {
-            return "Types.TIMESTAMP";
-        } else if (dataType.startsWith("VARCHAR") || dataType.startsWith("CHAR") || dataType.startsWith("LONG") || dataType.startsWith("TEXT")) {
-            return "Types.VARCHAR";
-        } else if (dataType.startsWith("BYTEA")) {
-            return "Types.BINARY";
-        } else if (dataType.startsWith("BLOB")) {
-            return "Types.BLOB";
-        } else if (dataType.startsWith("CLOB")) {
-            return "Types.CLOB";
-        } else if (dataType.startsWith(ORACLE_BOOLEAN)) {
-            return "Types.VARCHAR";
-        } else if (dataType.startsWith("BOOL")) {
-            return "Types.BOOLEAN";
-        } else {
-            return null;
-        }
-    }
-
-    public static String getTypes(TableColumn tableColumn) {
-        return getTypes(tableColumn.getType());
-    }
-
-    public static String getTypes(ViewColumn viewColumn) {
-        return getTypes(viewColumn.getType());
-    }
-
-    public static String getTypes(Argument argument) {
-        return getTypes(argument.getType());
-    }
-
-    public static String getTypes(Function function) {
-        return getTypes(function.getReturnType());
-    }
-
-
     public static String genPrimaryKeyList(Table table, boolean type) {
         StringBuilder result = new StringBuilder();
         for (TableColumn column : table.getPrimaryKeyCollection()) {
@@ -151,7 +103,7 @@ public class DbUtil {
                 result.append(getJavaClass(column) + " ");
             }
 
-            result.append(GenUtil.initLow(column.getName()));
+            result.append(javaObjectName(column.getName()));
         }
 
         return result.toString();
@@ -164,7 +116,7 @@ public class DbUtil {
         for (TableColumn column : table.getPrimaryKeyCollection()) {
             result
                     .append(i++ == 0 ? "Where " : " And\n       ")
-                    .append(column.getName() + " = ?");
+                    .append(column.getName() + " = :" + javaObjectName(column.getName()));
         }
 
         return GenUtil.stringToJava(result.toString(), true);
