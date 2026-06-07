@@ -1,10 +1,6 @@
 package it.eg.sloth.mavenplugin.writer.bean2;
 
 import it.eg.sloth.dbmodeler.model.DataBase;
-import it.eg.sloth.dbmodeler.model.schema.code.Function;
-import it.eg.sloth.dbmodeler.model.schema.code.Package;
-import it.eg.sloth.dbmodeler.model.schema.code.Procedure;
-import it.eg.sloth.dbmodeler.model.schema.sequence.Sequence;
 import it.eg.sloth.dbmodeler.model.schema.table.Table;
 import it.eg.sloth.dbmodeler.model.schema.view.View;
 import it.eg.sloth.mavenplugin.common.DbUtil;
@@ -21,7 +17,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Collection;
 
 /**
  * Project: sloth-plugin
@@ -47,6 +42,7 @@ public class AbstractBeanWriter implements BeanWriter {
 
     private static final String PACKAGE_TABLE_DAO = ".dao.table";
     private static final String PACKAGE_VIEW_DAO = ".dao.view";
+    private static final String PACKAGE_SEQUENCE_DAO = ".dao.sequence";
 
 
     File outputJavaDirectory;
@@ -54,11 +50,11 @@ public class AbstractBeanWriter implements BeanWriter {
 
     VelocityEngine velocityEngine;
     Template pojoTemplateForTable;
-    Template pojoTemplateForView;
-
     Template daoTemplateForTable;
+    Template pojoTemplateForView;
     Template daoTemplateForView;
 
+    Template daoTemplateForSequence;
 
     @Getter
     DataBase dataBase;
@@ -75,9 +71,12 @@ public class AbstractBeanWriter implements BeanWriter {
         velocityEngine.init();
 
         pojoTemplateForTable = velocityEngine.getTemplate(MessageFormat.format(POJO, "TABLE"));
+        daoTemplateForTable = velocityEngine.getTemplate(MessageFormat.format(DAO, "TABLE"));
+
         pojoTemplateForView = velocityEngine.getTemplate(MessageFormat.format(POJO, "VIEW"));
 
-        daoTemplateForTable = velocityEngine.getTemplate(MessageFormat.format(DAO, "TABLE"));
+        daoTemplateForSequence = velocityEngine.getTemplate(MessageFormat.format(DAO, "SEQUENCE"));
+
     }
 
     public void writeTables() throws IOException {
@@ -164,6 +163,30 @@ public class AbstractBeanWriter implements BeanWriter {
         FileUtils.forceMkdir(pojoClassFile.getParentFile());
         try (FileWriter fileWriter = new FileWriter(pojoClassFile)) {
             pojoTemplateForView.merge(velocityContext, fileWriter);
+        }
+
+    }
+
+    public void writeSequences() throws IOException {
+        String className = "SequenceDao";
+
+        getDataBase().getSchema().getSequenceCollection();
+
+        // VelocityContext
+        VelocityContext velocityContext = new VelocityContext();
+        velocityContext.put("daoPackageName", genPackage + PACKAGE_SEQUENCE_DAO);
+        velocityContext.put("daoClassName", className);
+
+        velocityContext.put("sequences", getDataBase().getSchema().getSequenceCollection());
+
+        velocityContext.put("DbUtil", DbUtil.class);
+        velocityContext.put("GenUtil", GenUtil.class);
+
+        // Write class - Pojo
+        File pojoClassFile = GenUtil.getClassFile(outputJavaDirectory, genPackage + PACKAGE_SEQUENCE_DAO, className);
+        FileUtils.forceMkdir(pojoClassFile.getParentFile());
+        try (FileWriter fileWriter = new FileWriter(pojoClassFile)) {
+            daoTemplateForSequence.merge(velocityContext, fileWriter);
         }
 
     }

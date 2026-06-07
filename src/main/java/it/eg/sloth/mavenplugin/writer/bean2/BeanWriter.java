@@ -37,6 +37,8 @@ public interface BeanWriter {
 
     void writeViews() throws IOException;
 
+    void writeSequences() throws IOException;
+
     class Factory {
         private Factory() {
             // NOP

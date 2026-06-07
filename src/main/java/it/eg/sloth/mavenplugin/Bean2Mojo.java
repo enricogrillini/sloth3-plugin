@@ -69,13 +69,17 @@ public class Bean2Mojo extends SlothMojo {
                 log.info("  Schema type:" + dataBase.getDbConnection().getDataBaseType());
                 BeanWriter beanWriter = BeanWriter.Factory.getBeanWriter(outputJavaDirectory, genPackage, dataBase);
 
-                // Table Pojo
-                log.info("  Table pojo");
+                // Table Dao/Pojo
+                log.info("  Table Dao/Pojo");
                 beanWriter.writeTables();
 
                 // View Pojo
-                log.info("  View pojo");
+                log.info("  View Pojo");
                 beanWriter.writeViews();
+
+                // Sequence DAO
+                log.info("  Sequence Dao");
+                beanWriter.writeSequences();
 
             } catch (Exception e) {
                 throw new MojoExecutionException("Could not generate Java source code!", e);
