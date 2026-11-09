@@ -139,7 +139,7 @@ public class DbUtil {
         for (TableColumn column : table.getPlainColumnCollection()) {
             result
                     .append(i++ == 0 ? "Values (" : ",\n        ")
-                    .append("?");
+                    .append(":" + javaObjectName(column.getName()));
         }
         result.append(")");
         return GenUtil.stringToJava(result.toString(), true);
@@ -152,7 +152,7 @@ public class DbUtil {
         for (TableColumn column : table.getPrimaryKeyCollection()) {
             result
                     .append(i++ == 0 ? "Where " : " And\n       ")
-                    .append(column.getName() + " = ?");
+                    .append(column.getName() + " = :" + javaObjectName(column.getName()));
         }
 
         return GenUtil.stringToJava(result.toString(), true);
@@ -167,7 +167,7 @@ public class DbUtil {
             if (!column.isLob()) {
                 result
                         .append(i++ == 0 ? "Set " : ",\n    ")
-                        .append(column.getName() + " = ?");
+                        .append(column.getName() + " = :" + javaObjectName(column.getName()));
             }
         }
         result.append("\n");
@@ -183,72 +183,4 @@ public class DbUtil {
         return GenUtil.stringToJava(result.toString(), true);
     }
 
-    public static String genUdateLob(Table table, TableColumn column) {
-        StringBuilder result = new StringBuilder("Update " + table.getName() + "\n");
-        if (column.isClob()) {
-            result.append("Set " + column.getName() + " = empty_CLOB()\n");
-        } else if (column.isBlob()) {
-            result.append("Set " + column.getName() + " = empty_BLOB()\n");
-        }
-
-        int i = 0;
-        for (TableColumn tableColumn : table.getPrimaryKeyCollection()) {
-            result
-                    .append(i++ == 0 ? "Where " : " And\n       ")
-                    .append(tableColumn.getName() + " = ?");
-
-        }
-
-        return GenUtil.stringToJava(result.toString(), true);
-    }
-
-    public static String genStatement(String packageName, Method dbMethod) {
-        String prefix = BaseFunction.isBlank(packageName) ? StringUtil.EMPTY : packageName + ".";
-        if (dbMethod instanceof Function) {
-            if (isOracleBoolean(((Function) dbMethod).getReturnType()))
-                return MessageFormat.format(STATEMENT_FUNCTION_BOOL, prefix + dbMethod.getName(), genArgumentParamList(dbMethod));
-            else
-                return MessageFormat.format(STATEMENT_FUNCTION, prefix + dbMethod.getName(), genArgumentParamList(dbMethod));
-        } else {
-            return MessageFormat.format(STATEMENT_PROCEDURE, prefix + dbMethod.getName(), genArgumentParamList(dbMethod));
-        }
-    }
-
-    public static String genArgumentParamList(Method procedure) {
-        StringBuilder result = new StringBuilder();
-
-        for (int i = 0; i < procedure.getArguments().size(); i++) {
-            if (i != 0) {
-                result.append(", ");
-            }
-            result.append("?");
-        }
-
-        return result.toString();
-    }
-
-    public static String genArgumentList(Method procedure, boolean connection, boolean type) {
-        StringBuilder result = new StringBuilder();
-
-        if (connection) {
-            if (type) {
-                result.append("Connection connection");
-            } else {
-                result.append("connection");
-            }
-        }
-
-        for (Argument argument : procedure.getArguments()) {
-            if (result.length() != 0) {
-                result.append(", ");
-            }
-
-            if (type) {
-                result.append(getJavaClass(argument) + " ");
-            }
-            result.append(GenUtil.initLow(argument.getName()));
-        }
-
-        return result.toString();
-    }
 }
