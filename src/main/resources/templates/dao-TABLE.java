@@ -1,4 +1,4 @@
-package ${pojoPackageName};
+package ${daoPackageName};
 
 import it.eg.sloth.db.Query;
 import lombok.Data;

@@ -176,7 +176,7 @@ public class DbUtil {
         for (TableColumn column : table.getPrimaryKeyCollection()) {
             result
                     .append(i++ == 0 ? "Where " : " And\n       ")
-                    .append(column.getName() + " = ?");
+                    .append(column.getName() + " = :" + javaObjectName(column.getName()));
 
         }
 
