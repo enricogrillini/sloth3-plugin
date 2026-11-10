@@ -1,5 +1,6 @@
 package ${daoPackageName};
 
+import ${pojoPackageName}.*;
 import it.eg.sloth.db.Query;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -59,7 +60,7 @@ public class ${daoClassName} {
         Query query = new Query(SQL_INSERT);
 
         #foreach( $tableColumn in $table.tableColumnCollection )
-        query.addParameter("${DbUtil.javaObjectName($tableColumn.name)}", ${pojoObjectName}.${DbUtil.javaObjectName($tableColumn.name)});
+        query.addParameter("${DbUtil.javaObjectName($tableColumn.name)}", ${pojoObjectName}.get${DbUtil.javaClassName($tableColumn.name)}());
         #end
 
         return query.execute(jdbcTemplate);
@@ -71,7 +72,7 @@ public class ${daoClassName} {
         Query query = new Query(SQL_UPDATE);
 
         #foreach( $tableColumn in $table.tableColumnCollection )
-        query.addParameter("${DbUtil.javaObjectName($tableColumn.name)}", ${pojoObjectName}.${DbUtil.javaObjectName($tableColumn.name)});
+        query.addParameter("${DbUtil.javaObjectName($tableColumn.name)}", ${pojoObjectName}.get${DbUtil.javaClassName($tableColumn.name)}());
         #end
 
         return query.execute(jdbcTemplate);
